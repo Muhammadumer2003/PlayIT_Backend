@@ -282,4 +282,27 @@ const RefereshAccessToken=asyncHandler(async(req,res)=>{
         )
     )
 });
-export  {registerUser,loginUser,logout,RefereshAccessToken};
+
+
+
+const updatePassword=asyncHandler(async(req,res)=>{
+    const {oldPassword,newPassword}=req.body;
+
+   const user= await User.findById(req.user?._id);
+
+   if(!user){
+    throw new ApiError(400, "user not found")
+   }
+   const verifyPassword=await user.isPasswordCorrect(oldPassword);
+   if(!verifyPassword){
+    throw new ApiError(400,"Invalid credentials")
+   }
+    user.password =newPassword;
+
+    await user.save({validateBeforeSave:false});
+
+    res.status(200).json(new ApiResponse(200,{},"Successfully updated "))
+
+
+});
+export  {registerUser,loginUser,logout,RefereshAccessToken,updatePassword};
