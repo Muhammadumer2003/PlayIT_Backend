@@ -23,8 +23,26 @@ export const verifyJWT=asyncHandler(async(req,_,next)=>{
 
         req.user=user;
         next();
+
+    //    const token= req.cookie?.accessToken || req.Header?.('Authorization').replace("Bearer ","");
+    //    if(!token) {
+    //     throw new ApiError(401,"Invalid token");
+    //    }
+
+    //    const decodedToken=jwt.verify(token,process.env.ACCESS_TOKEN_SCRET);
+
+    //    if(!decodedToken){
+    //     throw new ApiError(401,"Have to log in first")
+    //    }
+    //    const user= await User.findById(decodedToken?._id).select("-password -refreshToken");
+
+    //    req.user=user
+
+    //    next();
+
     
     } catch (error) {
+        console.log("Error occured");
         
     }
 

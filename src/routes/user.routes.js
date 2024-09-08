@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {registerUser, loginUser, logout } from "../controllers/register.controller.js";
+import {registerUser, loginUser, logout, RefereshAccessToken } from "../controllers/register.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -25,6 +25,7 @@ router.route("/login").post(loginUser);
 //secure route
 
 router.route("/logout").post(verifyJWT, logout);
+router.route("/referesh-token").post( RefereshAccessToken);
 
 
 export default router;

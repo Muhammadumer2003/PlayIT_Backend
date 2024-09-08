@@ -25,6 +25,20 @@ const generateAccessandRefreshTokens=async(userId)=>{
     
    }
 
+// try {
+//     const user=await User.findById({userId});
+//     const accessToken=await user.generateAccessToken();
+//     const refereshToken=await user.generateRefreshToken();
+//     user.refereshToken=refereshToken
+//     user.save({validateBeforeSave:false});
+
+//     return {accessToken,refereshToken};
+
+    
+// } catch (error) {
+//     throw new ApiError(500,"Server Error");
+    
+// }
    
    
     
@@ -107,8 +121,17 @@ const registerUser= asyncHandler(async(req,res)=>{
 
 const loginUser=asyncHandler(async(req,res)=>{
     const {email,password} = req.body;
+    console.log(email);
 
-    const emailVerify=await User.findOne({email});
+    if(!email ){
+        throw new ApiError(400,"Email is required");
+    }
+
+    const emailVerify=await User.findOne({
+        $or:[{email}]
+    });
+
+    console.log(emailVerify)
 
     if(!emailVerify){
         throw new ApiError(400,"User has to register himself first");
@@ -133,12 +156,53 @@ const loginUser=asyncHandler(async(req,res)=>{
 
     };
 
-    res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(
+    res.status(203).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(
         new ApiResponse(200,
             {user:
                 loggedInUser,accessToken,refreshToken},
             "User logged in successfully")
     );
+
+
+
+//     // req.body sa data loo
+
+//     const {email,password}=req.body;
+
+//     //email verify
+
+//    const usd=await User.findOne({email});
+
+//    if(!usd){
+//     throw new ApiError(400,"User has to register himself first");
+//    }
+
+//    const matchPass=usd.isPasswordCorrect(password);
+
+//    if(!matchPass){
+//     throw new ApiError(401,"Invalid email or password");
+//    }
+
+//    const {refreshToken,accessToken}=generateAccessandRefreshTokens(usd._id);
+
+//    const loggedInUser=await User.findById(usd._id).select("-password -refereshToken");
+
+//    const options={
+//     httpOnly:true,
+//     secure:true,
+//    }
+
+//    return res.status(200).cookie({"accessToken":accessToken}).cookie({"refereshToken":refreshToken}).
+//    json(
+//     new ApiResponse(
+//     200,
+//     {user:loggedInUser,accessToken,refreshToken},
+//     "User logged in successfully")
+  
+//    )
+
+
+
 
 
 
@@ -177,4 +241,45 @@ const logout=asyncHandler(async(req,res)=>{
     )
 
 });
-export  {registerUser,loginUser,logout};
+
+const RefereshAccessToken=asyncHandler(async(req,res)=>{
+    const incomingToken=req.cookie.refreshToken || req.body?.refreshToken;
+
+    if(!incomingToken){
+        throw new ApiError(402, "error occured during incoming token")
+    }
+
+    const userverify =  jwt.verify(incomingToken,process.env.REFRESH_TOKEN_SECRET)
+
+    
+
+    const user= await User.findById(userverify?._id);
+
+    if(!user){
+        throw new ApiError(402,"unable to fetch user");
+
+    }
+    if(incomingToken !== user.refreshToken){
+        throw new ApiError(402,"Invalid credentials")
+    }
+
+    const {accessToken,newrefreshToken}=generateAccessandRefreshTokens(user._id);
+
+    const options={
+        httpOnly:true,
+        secure:true
+    }
+
+    res.status(200).cookie("accessToken",accessToken,options).cookie("refereshToken",newrefreshToken,options).json(
+        new ApiResponse(
+            200,
+
+            {
+                accessToken, refreshToken : newrefreshToken
+    
+            },
+            "Access token refreshed"
+        )
+    )
+});
+export  {registerUser,loginUser,logout,RefereshAccessToken};
