@@ -305,4 +305,127 @@ const updatePassword=asyncHandler(async(req,res)=>{
 
 
 });
-export  {registerUser,loginUser,logout,RefereshAccessToken,updatePassword};
+
+
+const currentUser=asyncHandler(async(req,res)=>{
+    const user = req.user;
+    if(!user){
+        throw new ApiError(401, "User not authenticated")
+    }
+    res.status(200).json(new ApiResponse(200,{user},"Fetched current user"))
+
+});
+
+
+const UpdateUserDetail=asyncHandler(async(req,res)=>{
+    const {fullName,username,email}=req.body;
+    const user=await User.findByIdAndUpdate(
+        req.user._id,{
+            $set:{
+                fullName,
+                username,
+                email
+            }
+
+            
+        },{
+            
+                new: true,
+                
+            
+        }
+    )
+
+    if (!user){
+        throw new ApiError(400, "user not found")
+    }
+
+    user.save({validateBeforeSave:false})
+
+    res.status(200).json(new ApiResponse(200,user,"Successfully updated user details"))
+
+
+
+
+    
+
+});
+
+const updateUserAvatar= asyncHandler(async(req,res)=>{
+    const file=req.file?.path;
+    if(!file){
+        throw new ApiError(400, "No file uploaded")
+    }
+
+    const avatarImg=await uploadfileonCloud(file);
+    if(!avatarImg.url){
+        throw new ApiError(400, "Failed to upload avatar")
+    }
+
+   const user=await User.findByIdAndUpdate(
+    req.user._id,{
+        $set:{
+            avatar:avatarImg.url
+        }},{
+            
+                new: true,
+            
+        }
+   )
+
+    if(!user){
+        throw new ApiError(400, "User not found")
+    }
+    
+    
+    res.status(200).json(new ApiResponse(200,user,"Successfully updated user avatar"))
+
+    
+});
+
+
+const updateUserCOVER= asyncHandler(async(req,res)=>{
+    const file=req.file?.path;
+    if(!file){
+        throw new ApiError(400, "No file uploaded")
+    }
+
+    const COVERImg=await uploadfileonCloud(file);
+    if(!COVERImg.url){
+        throw new ApiError(400, "Failed to upload avatar")
+    }
+
+   const user=await User.findByIdAndUpdate(
+    req.user._id,{
+        $set:{
+            coverImage:COVERImg.url
+        }},{
+            
+                new: true,
+            
+        }
+   )
+   
+    if(!user){
+        throw new ApiError(400, "User not found")
+    }
+    
+    
+    res.status(200).json(new ApiResponse(200,user,"Successfully updated user avatar"))
+
+    
+})
+
+
+
+export  {
+    registerUser,
+    loginUser,
+    logout,
+    RefereshAccessToken,
+    updatePassword,
+    currentUser,
+    UpdateUserDetail,
+    updateUserAvatar,
+    updateUserCOVER
+};
