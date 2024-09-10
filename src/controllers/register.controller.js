@@ -414,6 +414,74 @@ const updateUserCOVER= asyncHandler(async(req,res)=>{
     res.status(200).json(new ApiResponse(200,user,"Successfully updated user avatar"))
 
     
+});
+
+
+const channelSubscribers=asyncHandler( async (req, res) => {
+    const {username}=req.params
+    if(!username){
+        throw new ApiError(400, "Username is required")
+    }
+    const channel=await User.aggregate([
+        {
+            $match:{
+                username:username
+            }
+        },{
+            $lookup:{
+                from:"subscriptions",
+                localField:"_id",
+                foreignField:"Subscriber",
+                foreignField:"channel",
+                as:"subscribers"
+            }
+        },
+        {
+            $lookup:{
+                form:"subscriptions",
+                localField:"_id",
+                foreignField:"Subscriber",
+                as:"subscriberTO"
+            }
+        },
+        {
+            $addFields:{
+                subscriberCount:{$size:"$subscribers",
+
+                },
+                subscribeTOCount:{$size:"$subscriberTO",},
+                isSubscribe:{
+                    $cond:{
+                    if :{$in:[req.user?._id,"subscribers.subscriber"]},
+                    then:true,
+                    else:false
+                }}
+                
+            }
+        },
+
+       { $project:{
+            _id:1,
+            username:1,
+            avatar:1,
+            coverImage:1,
+            subscriberCount:1,
+            subscribeTO:1,
+            isSubscribe:1
+        }}
+    ])
+
+    if(!channel.length){
+        throw new ApiError(404, "channel not found")
+    }
+    res.status(200).json(
+        new ApiResponse(
+            200,
+            channel[0],
+            "Fetched channel subscribers"
+        )
+    )
+
 })
 
 
