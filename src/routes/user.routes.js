@@ -26,6 +26,17 @@ router.route("/login").post(loginUser);
 
 router.route("/logout").post(verifyJWT, logout);
 router.route("/referesh-token").post( RefereshAccessToken);
+router.route("/change-password").post(verifyJWT,updatePassword);
+router.route("/current-user").post(verifyJWT,currentUser);
+router.route("/update-user-details").patch(verifyJWT,updateUserDetails);
+
+router.route("/update-user-avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
+
+router.route("/update-user-cover").patch(verifyJWT, upload.single("coverImage"), updateUserCover);
+
+router.route("/c/:username").post(verifyJWT, channelSubscribers)
+
+router.route("/watch-History").post(verifyJWT,getWatchHistory) 
 
 
 export default router;
