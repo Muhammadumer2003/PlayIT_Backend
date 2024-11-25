@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Installing dependencies...
+      - npm install  # For Node.js projects
+      - echo Dependencies installed.
+  build:
+    commands:
+      - echo Building the website...
+      - npm run build  # Or any other build steps you may have
+      - echo Build complete.
+  post_build:
+    commands:
+      - echo Deploying the site...
+      
+      - echo Deployment complete.
+
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: no
